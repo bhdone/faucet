@@ -186,14 +186,16 @@ int main(int argc, char const* argv[]) {
                 std::string address = root["address"].asString();
                 // check before invoke RPC
                 int fund_time = addr_man.Query(address);
-                int secs = time(nullptr) - fund_time;
-                if (secs < secs_on_next_fund) {
-                    std::stringstream ss;
-                    ss << "Address " << address << " already funded " << secs << " seconds ago";
-                    PLOG_ERROR << ss.str();
-                    msg_builder.WriteContent(ss.str(), "text/html");
-                    psession->Write(msg_builder.GetMessage());
-                    return;
+                if (fund_time != 0) {
+                    int secs = time(nullptr) - fund_time;
+                    if (secs < secs_on_next_fund) {
+                        std::stringstream ss;
+                        ss << "Address " << address << " already funded " << secs << " seconds ago";
+                        PLOG_ERROR << ss.str();
+                        msg_builder.WriteContent(ss.str(), "text/html");
+                        psession->Write(msg_builder.GetMessage());
+                        return;
+                    }
                 }
                 // invoke RPC and send the amount
                 PLOG_INFO << "Distribute fund " << amount << "BHD to address `" << address << "`";
