@@ -30,7 +30,7 @@ public:
     }
 
     bool ReadHeader(std::string const& name, std::string& out) const {
-        auto i = m_props.find(name);
+        auto i = m_props.find(ToLowerCase(name));
         if (i == std::end(m_props)) {
             return false;
         }
@@ -49,7 +49,7 @@ private:
             m_lines.push_back(line);
             return;
         }
-        std::string name = line.substr(0, pos);
+        std::string name = ToLowerCase(line.substr(0, pos));
         std::string value = TrimLeftString(line.substr(pos + 1));
         m_props[name] = value;
     }

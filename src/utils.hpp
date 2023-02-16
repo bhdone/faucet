@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <regex>
+#include <algorithm>
 
 #include "types.hpp"
 
@@ -69,6 +70,14 @@ inline std::string ExpandEnvPath(std::string const& path) {
         src = dst;
     }
     return dst;
+}
+
+inline std::string ToLowerCase(std::string const& str) {
+    std::string res;
+    std::transform(std::cbegin(str), std::cend(str), std::back_inserter(res), [](char ch) {
+        return std::tolower(ch);
+    });
+    return res;
 }
 
 #endif
