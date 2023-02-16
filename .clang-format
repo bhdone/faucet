@@ -1,0 +1,12 @@
+---
+Language:                         Cpp
+BasedOnStyle:                     Google
+AccessModifierOffset:             -4
+ColumnLimit:                      120
+IndentWidth:                      4
+ContinuationIndentWidth:          8
+DerivePointerAlignment:           false
+PointerAlignment:                 Left
+NamespaceIndentation:             None
+SortIncludes:                     false
+AlignAfterOpenBracket:            AlwaysBreak

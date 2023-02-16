@@ -6,6 +6,7 @@ find_package(plog CONFIG REQUIRED)
 find_package(cxxopts CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
 find_package(jsoncpp CONFIG REQUIRED)
+find_package(asio CONFIG REQUIRED)
 
 set(BF_SRCS
     src/main.cpp
@@ -14,4 +15,4 @@ set(BF_SRCS
 )
 
 add_executable(btchd-faucet ${BF_SRCS})
-target_link_libraries(btchd-faucet PRIVATE plog::plog cxxopts::cxxopts CURL::libcurl JsonCpp::JsonCpp)
+target_link_libraries(btchd-faucet PRIVATE plog::plog cxxopts::cxxopts CURL::libcurl JsonCpp::JsonCpp asio asio::asio)

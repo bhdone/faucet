@@ -8,8 +8,6 @@
 
 #include "types.hpp"
 
-namespace miner {
-
 class HTTPClient {
 public:
     HTTPClient(std::string url, std::string user, std::string passwd, bool no_proxy);
@@ -37,7 +35,5 @@ private:
     size_t m_send_data_offset{0};
     Bytes m_recv_data;
 };
-
-}  // namespace miner
 
 #endif

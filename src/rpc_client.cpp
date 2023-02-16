@@ -8,10 +8,8 @@ namespace fs = std::filesystem;
 
 #include "utils.hpp"
 
-namespace miner {
-
 RPCClient::RPCClient(bool no_proxy, std::string url, std::string const& cookie_path_str)
-        : m_no_proxy(no_proxy), m_url(std::move(url)) {
+    : m_no_proxy(no_proxy), m_url(std::move(url)) {
     if (cookie_path_str.empty()) {
         throw std::runtime_error("cookie is empty, cannot connect to btchd core");
     }
@@ -36,18 +34,17 @@ RPCClient::RPCClient(bool no_proxy, std::string url, std::string const& cookie_p
 }
 
 RPCClient::RPCClient(bool no_proxy, std::string url, std::string user, std::string passwd)
-        : m_no_proxy(no_proxy), m_url(std::move(url)), m_user(std::move(user)), m_passwd(std::move(passwd)) {}
+    : m_no_proxy(no_proxy), m_url(std::move(url)), m_user(std::move(user)), m_passwd(std::move(passwd)) {}
 
-void RPCClient::BuildRPCJson(Json::Value& params, std::string const& val) {
-    params.append(val);
+std::string RPCClient::SendToAddress(std::string const& address, uint64_t amount) {
+    auto result = SendMethod(m_no_proxy, "sendtoaddress", address, amount);
+    return result.result.asString();
 }
 
-void RPCClient::BuildRPCJson(Json::Value& params, Bytes const& val) {
-    params.append(BytesToHex(val));
-}
+void RPCClient::BuildRPCJson(Json::Value& params, std::string const& val) { params.append(val); }
+
+void RPCClient::BuildRPCJson(Json::Value& params, Bytes const& val) { params.append(BytesToHex(val)); }
 
 void RPCClient::BuildRPCJson(Json::Value& params, bool val) { params.append(Json::Value(val)); }
 
 void RPCClient::BuildRPCJsonWithParams(Json::Value& out_params) {}
-
-}  // namespace miner

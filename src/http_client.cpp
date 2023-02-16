@@ -5,8 +5,6 @@
 #include "curl/curl.h"
 #include "curl/easy.h"
 
-namespace miner {
-
 HTTPClient::HTTPClient(std::string url, std::string user, std::string passwd, bool no_proxy)
         : m_curl(curl_easy_init()),
           m_url(std::move(url)),
@@ -87,5 +85,3 @@ size_t HTTPClient::SendCallback(char* buffer, size_t size, size_t nitems, void* 
 
     return bytes_to_copy;
 }
-
-}  // namespace miner

@@ -34,4 +34,12 @@ Bytes MakeBytes(std::array<uint8_t, N> const& val) {
     return res;
 }
 
+inline std::string TrimLeftString(std::string const& str) {
+    auto p = str.find_first_not_of(' ');
+    if (p == std::string::npos) {
+        return "";
+    }
+    return str.substr(p);
+}
+
 #endif

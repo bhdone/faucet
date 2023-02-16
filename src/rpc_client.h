@@ -13,8 +13,6 @@
 
 #include "utils.hpp"
 
-namespace miner {
-
 class Error : public std::runtime_error {
 public:
     explicit Error(char const* msg) : std::runtime_error(msg) {}
@@ -47,6 +45,8 @@ public:
     RPCClient(bool no_proxy, std::string url, std::string const& cookie_path_str = "");
 
     RPCClient(bool no_proxy, std::string url, std::string user, std::string passwd);
+
+    std::string SendToAddress(std::string const& address, uint64_t amount);
 
 private:
     void BuildRPCJson(Json::Value& params, std::string const& val);
@@ -111,10 +111,10 @@ private:
         char const* psz = reinterpret_cast<char const*>(received_data.data());
         Json::Value res;
         Json::CharReaderBuilder builder;
-        auto reader = std::make_shared<Json::CharReader>(builder.newCharReader());
+        std::shared_ptr<Json::CharReader> reader(builder.newCharReader());
         std::string errs;
         if (!reader->parse(psz, psz + strlen(psz), &res, &errs)) {
-            throw RPCError("cannot parse the result from rpc server");
+            throw Error("cannot parse the result from rpc server");
         }
 
         // Build result and return
@@ -141,7 +141,5 @@ private:
     std::string m_user;
     std::string m_passwd;
 };
-
-}  // namespace miner
 
 #endif
