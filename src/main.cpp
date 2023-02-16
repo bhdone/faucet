@@ -73,6 +73,7 @@ public:
             int time = record["time"].asInt();
             m_records[address_str] = time;
         }
+        PLOG_DEBUG << "read total " << m_records.size() << " record(s) from db file";
         return true;
     }
 
