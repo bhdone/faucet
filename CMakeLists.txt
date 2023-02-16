@@ -16,3 +16,4 @@ set(BF_SRCS
 
 add_executable(btchd-faucet ${BF_SRCS})
 target_link_libraries(btchd-faucet PRIVATE plog::plog cxxopts::cxxopts CURL::libcurl JsonCpp::JsonCpp asio asio::asio)
+target_compile_features(btchd-faucet PRIVATE cxx_std_17)
