@@ -109,7 +109,7 @@ int main(int argc, char const* argv[]) {
             ("verbose", "Show more logs for debugging purpose")         // --verbose
             ("amount", "How many BHD we should send to user on each request",
              cxxopts::value<int>()->default_value("10"))  // --amount
-            ("db", "The database file stores all funded addresses",
+            ("db-path", "The database file stores all funded addresses",
              cxxopts::value<std::string>()->default_value("faucet-db.json"))  // --db
             ("secs-on-next-fund", "How many seconds should be taken for the same address can be funded again?",
              cxxopts::value<int>()->default_value("60"))  // --secs-on-next-fund
@@ -136,7 +136,7 @@ int main(int argc, char const* argv[]) {
     unsigned short port = result["port"].as<unsigned short>();
 
     FaucetAddrMan addr_man;
-    std::string db_path = ExpandEnvPath(result["db"].as<std::string>());
+    std::string db_path = ExpandEnvPath(result["db-path"].as<std::string>());
     addr_man.LoadFromFile(db_path);
 
     int secs_on_next_fund = result["secs-on-next-fund"].as<int>();

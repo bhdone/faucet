@@ -64,7 +64,7 @@ inline bool Expand1EnvPath(std::string const& path, std::string& out_expanded) {
 
 inline std::string ExpandEnvPath(std::string const& path) {
     std::string src = path;
-    std::string dst;
+    std::string dst = path;
     while (Expand1EnvPath(src, dst)) {
         src = dst;
     }
