@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sstream>
+#include <regex>
 
 #include "types.hpp"
 
@@ -40,6 +41,34 @@ inline std::string TrimLeftString(std::string const& str) {
         return "";
     }
     return str.substr(p);
+}
+
+inline bool Expand1EnvPath(std::string const& path, std::string& out_expanded) {
+    std::regex r("\\$\\w+");
+    std::sregex_iterator begin(std::begin(path), std::end(path), r), end;
+    if (begin != end) {
+        auto const& m = *begin;
+        out_expanded = path;
+        // erase the env
+        auto erase_begin = std::begin(out_expanded) + m.position();
+        auto erase_end = erase_begin + m.length();
+        out_expanded.erase(erase_begin, erase_end);
+        // insert the actual value
+        char* actual = getenv(m.str().c_str() + 1);
+        out_expanded.insert(m.position(), actual);
+        // we got a match and replacement has been made
+        return true;
+    }
+    return false;
+}
+
+inline std::string ExpandEnvPath(std::string const& path) {
+    std::string src = path;
+    std::string dst;
+    while (Expand1EnvPath(src, dst)) {
+        src = dst;
+    }
+    return dst;
 }
 
 #endif

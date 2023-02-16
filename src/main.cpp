@@ -23,7 +23,7 @@ int main(int argc, char const* argv[]) {
             ("rpc-url", "Connect to btchd through this url",
              cxxopts::value<std::string>()->default_value("http://127.0.0.1:18732"))  // --rpc-url
             ("cookie-path", "The path to `.cookie`",
-             cxxopts::value<std::string>()->default_value("~/.btchd/testnet3/.cookie"))  // --cookie-path
+             cxxopts::value<std::string>()->default_value("$HOME/.btchd/testnet3/.cookie"))  // --cookie-path
             ("addr", "Service will bind to this address",
              cxxopts::value<std::string>()->default_value("0.0.0.0"))  // --addr
             ("port", "Service will bind to this port",
@@ -44,7 +44,8 @@ int main(int argc, char const* argv[]) {
     PLOG_INFO << "Faucet for BitcoinHD testnet3";
 
     std::string rpc_url = result["rpc-url"].as<std::string>();
-    std::string cookie_path = result["cookie-path"].as<std::string>();
+    std::string cookie_path = ExpandEnvPath(result["cookie-path"].as<std::string>());
+    PLOG_DEBUG << "Construct RPC object with url: " << rpc_url << ", cookie: " << cookie_path;
     RPCClient rpc(true, rpc_url, cookie_path);
 
     int amount = result["amount"].as<int>();
@@ -57,13 +58,21 @@ int main(int argc, char const* argv[]) {
 
     asio::io_context ioc;
     Service service(ioc, endpoint, [&rpc, amount](Session* psession, SimpleHttpMessageParser const& parser) {
+        PLOG_DEBUG << "Processing message...";
         // analyze the received string and trying to return the tx id
         SimpleHttpMessageBuilder msg_builder;
         std::string content_type;
         if (!parser.ReadHeader("Content-Type", content_type)) {
+            PLOG_ERROR << "Message is received without `Content-Type`, ignored.";
             msg_builder.WriteContent("Missing `Content-Type`.", "text/html");
-        } else if (content_type != "application/json") {
+            psession->Write(msg_builder.GetMessage());
+            return;
+        }
+        if (content_type != "application/json") {
+            PLOG_ERROR << "Message is received with an invalid `Content-Type`: " << content_type;
             msg_builder.WriteContent("Invalid Content-Type, `application/json` is required.", "text/html");
+            psession->Write(msg_builder.GetMessage());
+            return;
         }
         // parse the json from content
         Json::CharReaderBuilder builder;
@@ -72,19 +81,27 @@ int main(int argc, char const* argv[]) {
         Json::Value root;
         std::string errs;
         if (!reader->parse(body.c_str(), body.c_str() + body.size(), &root, &errs)) {
+            PLOG_ERROR << "Cannot parse json from the message.";
             msg_builder.WriteContent("Cannot parse json!", "text/html");
             psession->Write(msg_builder.GetMessage());
             return;
         }
         if (!root.isMember("address")) {
+            PLOG_ERROR << "No `address` can be found.";
             msg_builder.WriteContent("No `address` can be found!", "text/html");
             psession->Write(msg_builder.GetMessage());
             return;
         }
         std::string address = root["address"].asString();
         // invoke RPC and send the amount
-        std::string tx_str = rpc.SendToAddress(address, amount);
-        msg_builder.WriteContent(tx_str, "text/html");
+        PLOG_INFO << "Distribute fund " << amount << "BHD to address `" << address << "`";
+        try {
+            std::string tx_str = rpc.SendToAddress(address, amount);
+            PLOG_INFO << "tx=" << tx_str;
+            msg_builder.WriteContent(tx_str, "text/html");
+        } catch (std::exception const& e) {
+            msg_builder.WriteContent(e.what(), "text/html");
+        }
         psession->Write(msg_builder.GetMessage());
     });
     ioc.run();
