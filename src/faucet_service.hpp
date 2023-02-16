@@ -38,14 +38,19 @@ public:
         return true;
     }
 
-    std::string ReadBody() const {
-        return m_body;
-    }
+    std::string ReadBody() const { return m_body; }
+
+    std::string ReadMethodType() const { return m_method_type; }
 
 private:
     void AnalyzeLine(std::string const& line) {
         auto pos = line.find_first_of(':');
         if (pos == std::string::npos) {
+            // Analyze method type
+            if (m_method_type.empty()) {
+                auto p2 = line.find_first_of(' ');
+                m_method_type = line.substr(0, p2);
+            }
             m_lines.push_back(line);
             return;
         }
@@ -97,6 +102,7 @@ private:
     std::vector<std::string> m_lines;
     std::map<std::string, std::string> m_props;
     std::string m_body;
+    std::string m_method_type;
 };
 
 class SimpleHttpMessageBuilder {
@@ -109,9 +115,7 @@ public:
         m_ss << content;
     }
 
-    std::string GetMessage() const {
-        return m_ss.str();
-    }
+    std::string GetMessage() const { return m_ss.str(); }
 
 private:
     std::stringstream m_ss;
@@ -165,15 +169,17 @@ private:
             return;
         }
         std::string const& msg = m_writing_msgs.front();
-        asio::async_write(m_s, asio::buffer(msg), [self = shared_from_this(), &msg](std::error_code const& ec, std::size_t total_wrote){
-            if (ec) {
-                PLOG_ERROR << "Peer write error: " << ec.message();
-                return;
-            }
-            assert(total_wrote == msg.size());
-            self->m_writing_msgs.pop_front();
-            self->WriteNext();
-        });
+        asio::async_write(
+                m_s, asio::buffer(msg),
+                [self = shared_from_this(), &msg](std::error_code const& ec, std::size_t total_wrote) {
+                    if (ec) {
+                        PLOG_ERROR << "Peer write error: " << ec.message();
+                        return;
+                    }
+                    assert(total_wrote == msg.size());
+                    self->m_writing_msgs.pop_front();
+                    self->WriteNext();
+                });
     }
 
 private:
