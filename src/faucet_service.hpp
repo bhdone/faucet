@@ -209,10 +209,13 @@ private:
                 return;
             }
             auto psession = std::make_shared<Session>(std::move(s));
-            psession->Start([this, psession](bool succ, SimpleHttpMessageParser const& parser) {
+            psession->Start([this, pweak_session = std::weak_ptr(psession)](bool succ, SimpleHttpMessageParser const& parser) {
                 if (succ) {
                     // should pass it to parent
-                    m_callback(psession.get(), parser);
+                    auto psession = pweak_session.lock();
+                    if (psession) {
+                        m_callback(psession.get(), parser);
+                    }
                 } else {
                     // TODO sorry, it didn't work
                 }
