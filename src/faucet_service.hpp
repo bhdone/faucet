@@ -127,6 +127,8 @@ public:
 
     explicit Session(tcp::socket&& s) : m_s(std::move(s)) {}
 
+    ~Session() { PLOGD << "Session is going to be free"; }
+
     void Start(Callback callback) {
         m_callback = std::move(callback);
         ReadNext();
